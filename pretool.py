@@ -1125,6 +1125,9 @@ class PretoolApp(App):
         except Exception:
             pass
 
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        self.screen.focus_next()
+
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         if event.data_table.id != "menutable":
             return
