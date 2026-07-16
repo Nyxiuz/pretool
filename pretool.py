@@ -534,7 +534,7 @@ class PreModal(ModalScreen):
 
     def _set_status(self, i: int, status: str, ok: bool) -> None:
         st = self.query_one(f"#st_{i}", Static)
-        st.update(f"[green]{status}[/green]" if ok else f"[yellow]{status}[/yellow]")
+        st.update(f"[b]{status}[/b]" if ok else f"{status}")
         cb = self.query_one(f"#cb_{i}", Checkbox)
         if ok:
             cb.value = True
@@ -816,7 +816,7 @@ class PreScreen(Screen):
             t.add_row(name, guess_section(self.app.cfg, name) or "-", ", ".join(seen))
         status = f"{len(releases)} releases found."
         if errors:
-            status += "  [red]Errors: " + "; ".join(errors) + "[/red]"
+            status += "  Errors: " + "; ".join(errors)
         if not enabled_sites(self.app.cfg):
             status = "No active sites - add them under Sites in the main menu."
         self.query_one("#status", Static).update(status)
@@ -961,19 +961,19 @@ class SettingsScreen(Screen):
         try:
             api.raw("noop", [s["name"] for s in enabled_sites(self.app.cfg)] or ["_"])
             ms = (time.monotonic() - t0) * 1000
-            msg = f"[green]OK - response in {ms:.0f} ms[/green]"
+            msg = f"OK - response in {ms:.0f} ms"
         except requests.exceptions.SSLError as e:
-            msg = f"[red]SSL error: {e}. Try with Verify SSL off.[/red]"
+            msg = f"SSL error: {e}. Try with Verify SSL off."
         except requests.exceptions.ConnectionError as e:
-            msg = f"[red]Cannot reach API: {e}[/red]"
+            msg = f"Cannot reach API: {e}"
         except requests.exceptions.HTTPError as e:
             code = e.response.status_code if e.response is not None else "?"
             if code == 401:
-                msg = "[red]401 Unauthorized - wrong password[/red]"
+                msg = "401 Unauthorized - wrong password"
             else:
-                msg = f"[red]HTTP error {code}[/red]"
+                msg = f"HTTP error {code}"
         except Exception as e:
-            msg = f"[red]Error: {type(e).__name__}: {e}[/red]"
+            msg = f"Error: {type(e).__name__}: {e}"
         self.app.call_from_thread(self.query_one("#settings_status", Static).update, msg)
 
 
@@ -985,20 +985,20 @@ class PretoolApp(App):
     theme = "textual-dark"
 
     CSS = """
-    #topbar { height: 1; background: $accent; color: $text; padding: 0 1; }
-    #bottombar { height: 1; background: $accent; color: $text; padding: 0 1; dock: bottom; }
-    #marquee { height: 1; background: $surface; color: $accent; padding: 0 1; dock: bottom; overflow: hidden; }
+    #topbar { height: 1; background: white; color: black; padding: 0 1; }
+    #bottombar { height: 1; background: white; color: black; padding: 0 1; dock: bottom; }
+    #marquee { height: 1; background: black; color: white; padding: 0 1; dock: bottom; overflow: hidden; }
     #menu { height: 1fr; }
     #modalbox, #resultbox {
         width: 90; max-height: 90%;
-        border: solid $accent; background: $surface; padding: 0 1;
+        border: solid white; background: black; padding: 0 1;
     }
     #resultbox { width: 100; height: 80%; }
     #resultlog { height: 1fr; }
     ModalScreen { align: center middle; }
     #confirmbox {
         width: auto; max-width: 50; height: auto;
-        border: solid $accent; background: $surface; padding: 0 1;
+        border: solid white; background: black; padding: 0 1;
     }
     #modalbox Input { margin-bottom: 1; }
     #modalbox TextArea { height: 6; margin-bottom: 1; }
@@ -1089,7 +1089,7 @@ class PretoolApp(App):
         parts = []
         for name, status in self._site_status.items():
             if status is None:
-                parts.append(f"[yellow]{name}[/yellow]")
+                parts.append(name)
             elif status:
                 rtime = self._site_rtime.get(name, "")
                 if rtime:
