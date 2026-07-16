@@ -982,7 +982,6 @@ class SettingsScreen(Screen):
 class PretoolApp(App):
     TITLE = "pretool"
     SUB_TITLE = "SITE PRE via cbftp"
-    theme = "textual-dark"
 
     CSS = """
     Screen { background: black; color: white; }
