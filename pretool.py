@@ -985,6 +985,7 @@ class PretoolApp(App):
     theme = "textual-dark"
 
     CSS = """
+    Screen { background: black; color: white; }
     #topbar { height: 1; background: white; color: black; padding: 0 1; }
     #bottombar { height: 1; background: white; color: black; padding: 0 1; dock: bottom; }
     #marquee { height: 1; background: black; color: white; padding: 0 1; dock: bottom; overflow: hidden; }
