@@ -23,7 +23,7 @@ TUI tool for sending `SITE PRE` commands via the cbftp HTTPS/JSON API.
 ```bash
 git clone https://github.com/Nyxiuz/pretool.git
 cd pretool
-pip install textual requests tomli-w
+pip install -r requirements.txt
 ```
 
 ## Usage
