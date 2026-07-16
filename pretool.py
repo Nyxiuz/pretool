@@ -890,7 +890,10 @@ class LogScreen(Screen):
 class SettingsScreen(Screen):
     """Edit API connection (url, password, port, timeout, ssl)."""
 
-    BINDINGS = [("escape", "app.pop_screen", "Back")]
+    BINDINGS = [
+        ("d", "save_back", "Save & Back"),
+        ("escape", "app.pop_screen", "Back"),
+    ]
 
     def compose(self) -> ComposeResult:
         a = self.app.cfg["api"]
@@ -908,7 +911,7 @@ class SettingsScreen(Screen):
             with Horizontal(id="buttons"):
                 yield Button("Test connection", id="btn_test")
                 yield Button("Save", id="btn_save")
-        yield Static("esc:Back", id="bottombar")
+        yield Static("d:Save & Back  esc:Back", id="bottombar")
         yield Static(" ", id="marquee")
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
@@ -937,15 +940,18 @@ class SettingsScreen(Screen):
             "timeout": timeout,
         }
 
+    def action_save_back(self) -> None:
+        data = self._collect()
+        if data is None:
+            return
+        self.app.cfg["api"].update(data)
+        save_config(self.app.cfg)
+        self.app.notify("Saved")
+        self.app.pop_screen()
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn_save":
-            data = self._collect()
-            if data is None:
-                return
-            self.app.cfg["api"].update(data)
-            save_config(self.app.cfg)
-            self.app.notify("Saved")
-            self.app.pop_screen()
+            self.action_save_back()
         elif event.button.id == "btn_test":
             data = self._collect()
             if data is None:
