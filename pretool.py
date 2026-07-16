@@ -371,8 +371,8 @@ class ConfirmModal(ModalScreen):
     BINDINGS = [
         ("y", "yes", "Yes"),
         ("n", "no", "No"),
-        ("left", "focus_previous", ""),
-        ("right", "focus_next", ""),
+        ("left", "move_left", ""),
+        ("right", "move_right", ""),
     ]
 
     def __init__(self, question: str):
@@ -391,6 +391,12 @@ class ConfirmModal(ModalScreen):
 
     def action_no(self) -> None:
         self.dismiss(False)
+
+    def action_move_left(self) -> None:
+        self.query_one("#btn_yes", Button).focus()
+
+    def action_move_right(self) -> None:
+        self.query_one("#btn_no", Button).focus()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "btn_yes")
