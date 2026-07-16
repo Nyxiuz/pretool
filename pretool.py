@@ -368,6 +368,13 @@ class SectionModal(ModalScreen):
 
 
 class ConfirmModal(ModalScreen):
+    BINDINGS = [
+        ("y", "yes", "Yes"),
+        ("n", "no", "No"),
+        ("left", "focus_previous", ""),
+        ("right", "focus_next", ""),
+    ]
+
     def __init__(self, question: str):
         super().__init__()
         self.question = question
@@ -378,6 +385,12 @@ class ConfirmModal(ModalScreen):
             with Horizontal(id="buttons"):
                 yield Button("Yes", variant="error", id="btn_yes")
                 yield Button("No", id="btn_no")
+
+    def action_yes(self) -> None:
+        self.dismiss(True)
+
+    def action_no(self) -> None:
+        self.dismiss(False)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "btn_yes")
