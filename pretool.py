@@ -1023,7 +1023,7 @@ class PretoolApp(App):
     Input:focus { border: solid white; background: black; color: white; }
     TextArea { border: solid grey; background: black; color: white; }
     TextArea:focus { border: solid white; background: black; color: white; }
-    Checkbox { border: none; background: black; color: white; }
+    Checkbox { border: none; background: black; color: grey; }
     Checkbox:focus { border: none; color: white; text-style: bold; }
     Vertical { background: black; }
     Horizontal { background: black; }
