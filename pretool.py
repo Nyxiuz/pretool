@@ -984,46 +984,53 @@ class PretoolApp(App):
     SUB_TITLE = "SITE PRE via cbftp"
 
     CSS = """
+    * { background: black; color: white; }
     Screen { background: black; color: white; }
     #topbar { height: 1; background: white; color: black; padding: 0 1; }
     #bottombar { height: 1; background: white; color: black; padding: 0 1; dock: bottom; }
     #marquee { height: 1; background: black; color: white; padding: 0 1; dock: bottom; overflow: hidden; }
-    #menu { height: 1fr; }
+    #menu { height: 1fr; background: black; }
     #modalbox, #resultbox {
         width: 90; max-height: 90%;
         border: solid white; background: black; padding: 0 1;
     }
     #resultbox { width: 100; height: 80%; }
-    #resultlog { height: 1fr; }
-    ModalScreen { align: center middle; }
+    #resultlog { height: 1fr; background: black; color: white; }
+    ModalScreen { align: center middle; background: black; }
     #confirmbox {
         width: auto; max-width: 50; height: auto;
         border: solid white; background: black; padding: 0 1;
     }
-    #modalbox Input { margin-bottom: 1; }
-    #modalbox TextArea { height: 6; margin-bottom: 1; }
+    #modalbox Input { margin-bottom: 1; background: black; color: white; }
+    #modalbox TextArea { height: 6; margin-bottom: 1; background: black; color: white; }
     #buttons { height: auto; align-horizontal: right; }
     #buttons Button { margin-left: 1; background: white; color: black; }
     Button:focus { background: black; color: white; border: solid white; }
-    #sitelist { max-height: 15; }
+    #sitelist { max-height: 15; background: black; }
     .siterow { height: auto; }
     .sitestatus { padding-left: 2; }
-    DataTable { height: 1fr; border: none; }
+    DataTable { height: 1fr; border: none; background: black; color: white; }
     DataTable > .datatable--cursor { background: white; color: black; }
     DataTable:focus > .datatable--cursor { background: white; color: black; }
     DataTable > .datatable--header { background: black; color: white; text-style: bold; }
-    #status { padding: 0 1; height: auto; }
-    #settingsbox { padding: 0 1; }
-    #settingsbox Input { margin-bottom: 1; }
+    #status { padding: 0 1; height: auto; background: black; color: white; }
+    #settingsbox { padding: 0 1; background: black; color: white; }
+    #settingsbox Input { margin-bottom: 1; background: black; color: white; }
     #settingsbox Checkbox { margin-bottom: 1; }
     #settings_status { height: auto; }
     *:focus { border: solid white; }
-    Input { border: solid white; }
-    Input:focus { border: solid white; }
-    TextArea { border: solid white; }
-    TextArea:focus { border: solid white; }
-    Checkbox { border: none; }
+    Input { border: solid white; background: black; color: white; }
+    Input:focus { border: solid white; background: black; color: white; }
+    TextArea { border: solid white; background: black; color: white; }
+    TextArea:focus { border: solid white; background: black; color: white; }
+    Checkbox { border: none; background: black; color: white; }
     Checkbox:focus { border: none; }
+    Vertical { background: black; }
+    Horizontal { background: black; }
+    VerticalScroll { background: black; }
+    Static { background: black; color: white; }
+    Label { background: black; color: white; }
+    Log { background: black; color: white; }
     """
 
     BINDINGS = [("q", "request_quit", "Quit")]
