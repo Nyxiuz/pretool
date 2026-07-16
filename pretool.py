@@ -1004,8 +1004,8 @@ class PretoolApp(App):
     #modalbox Input { margin-bottom: 1; background: black; color: white; }
     #modalbox TextArea { height: 6; margin-bottom: 1; background: black; color: white; }
     #buttons { height: auto; align-horizontal: right; }
-    #buttons Button { margin-left: 1; background: white; color: black; }
-    Button:focus { background: black; color: white; border: solid white; }
+    #buttons Button { margin-left: 1; background: grey; color: white; border: none; }
+    Button:focus { background: white; color: black; border: none; text-style: bold; }
     #sitelist { max-height: 15; background: black; }
     .siterow { height: auto; }
     .sitestatus { padding-left: 2; }
