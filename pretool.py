@@ -1019,12 +1019,12 @@ class PretoolApp(App):
     #settingsbox Checkbox { margin-bottom: 1; }
     #settings_status { height: auto; }
     *:focus { border: solid white; }
-    Input { border: solid white; background: black; color: white; }
+    Input { border: solid grey; background: black; color: white; }
     Input:focus { border: solid white; background: black; color: white; }
-    TextArea { border: solid white; background: black; color: white; }
+    TextArea { border: solid grey; background: black; color: white; }
     TextArea:focus { border: solid white; background: black; color: white; }
     Checkbox { border: none; background: black; color: white; }
-    Checkbox:focus { border: none; }
+    Checkbox:focus { border: none; color: white; text-style: bold; }
     Vertical { background: black; }
     Horizontal { background: black; }
     VerticalScroll { background: black; }
