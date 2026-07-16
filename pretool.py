@@ -278,7 +278,7 @@ class SiteModal(ModalScreen):
             yield TextArea(secmap_text, id="ta_secmap")
             yield Checkbox("Active", value=s.get("enabled", True), id="cb_enabled")
             with Horizontal(id="buttons"):
-                yield Button("Save", variant="primary", id="btn_save")
+                yield Button("Save", id="btn_save")
                 yield Button("Cancel", id="btn_cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -347,7 +347,7 @@ class SectionModal(ModalScreen):
                 id="in_pattern",
             )
             with Horizontal(id="buttons"):
-                yield Button("Save", variant="primary", id="btn_save")
+                yield Button("Save", id="btn_save")
                 yield Button("Cancel", id="btn_cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -404,7 +404,7 @@ class ResultModal(ModalScreen):
             log = Log(id="resultlog")
             yield log
             with Horizontal(id="buttons"):
-                yield Button("Ok", variant="primary", id="btn_ok")
+                yield Button("Ok", id="btn_ok")
 
     def on_mount(self) -> None:
         self.query_one("#resultlog", Log).write(self.text)
@@ -426,7 +426,7 @@ class ConfirmPreModal(ModalScreen):
             log = Log(id="previewlog")
             yield log
             with Horizontal(id="buttons"):
-                yield Button("Confirm", variant="primary", id="btn_confirm")
+                yield Button("Confirm", id="btn_confirm")
                 yield Button("Cancel", id="btn_cancel")
 
     def on_mount(self) -> None:
@@ -466,7 +466,7 @@ class PreModal(ModalScreen):
                         yield Checkbox(self._entry_label(entry), value=False, id=f"cb_{i}")
                         yield Static("checking completeness...", id=f"st_{i}", classes="sitestatus")
             with Horizontal(id="buttons"):
-                yield Button("Send SITE PRE", variant="primary", id="btn_pre", disabled=True)
+                yield Button("Send SITE PRE", id="btn_pre", disabled=True)
                 yield Button("Cancel", id="btn_cancel")
 
     def on_mount(self) -> None:
@@ -907,7 +907,7 @@ class SettingsScreen(Screen):
             yield Static("", id="settings_status")
             with Horizontal(id="buttons"):
                 yield Button("Test connection", id="btn_test")
-                yield Button("Save", variant="primary", id="btn_save")
+                yield Button("Save", id="btn_save")
         yield Static("esc:Back", id="bottombar")
         yield Static(" ", id="marquee")
 
@@ -1003,7 +1003,8 @@ class PretoolApp(App):
     #modalbox Input { margin-bottom: 1; }
     #modalbox TextArea { height: 6; margin-bottom: 1; }
     #buttons { height: auto; align-horizontal: right; }
-    #buttons Button { margin-left: 1; }
+    #buttons Button { margin-left: 1; background: white; color: black; }
+    Button:focus { background: black; color: white; border: solid white; }
     #sitelist { max-height: 15; }
     .siterow { height: auto; }
     .sitestatus { padding-left: 2; }
