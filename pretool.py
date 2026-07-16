@@ -1028,6 +1028,7 @@ class PretoolApp(App):
         super().__init__()
         self.cfg = load_config()
         self.log_lines: list[str] = []
+        self._site_status: dict[str, bool | None] = {}
 
     def make_api(self) -> CbApi:
         return CbApi(self.cfg, logger=self.add_log)
@@ -1064,19 +1065,39 @@ class PretoolApp(App):
         t.add_column("Option")
         for label, _key in self.MENU_ITEMS:
             t.add_row(label)
-        self._marquee_text = "Fuck you Beta!     "
-        self._marquee_pos = 0
-        self.set_interval(0.15, self._scroll_marquee)
+        for s in enabled_sites(self.cfg):
+            self._site_status[s["name"]] = None
+        self._update_status_bar()
+        self._check_sites()
 
-    def _scroll_marquee(self) -> None:
+    @work(thread=True, exclusive=True)
+    def _check_sites(self) -> None:
+        api = self.make_api()
+        for s in enabled_sites(self.cfg):
+            name = s["name"]
+            try:
+                res = api.raw("noop", [name])
+                text = next(iter(res.values()), "").lower()
+                online = "fail" not in text and "error" not in text and "unable" not in text
+            except Exception:
+                online = False
+            self._site_status[name] = online
+            self.call_from_thread(self._update_status_bar)
+
+    def _update_status_bar(self) -> None:
+        parts = []
+        for name, status in self._site_status.items():
+            if status is None:
+                parts.append(f"[yellow]{name}[/yellow]")
+            elif status:
+                parts.append(f"[green]{name}[/green]")
+            else:
+                parts.append(f"[red]{name}[/red]")
+        text = "  ".join(parts) if parts else " "
         try:
-            marquee = self.screen.query_one("#marquee", Static)
+            self.screen.query_one("#marquee", Static).update(text)
         except Exception:
-            return
-        width = self.size.width
-        buf = self._marquee_text * ((width // len(self._marquee_text)) + 2)
-        marquee.update(buf[self._marquee_pos:self._marquee_pos + width])
-        self._marquee_pos = (self._marquee_pos + 1) % len(self._marquee_text)
+            pass
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         if event.data_table.id != "menutable":
