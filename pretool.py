@@ -581,26 +581,64 @@ class SitesScreen(Screen):
         ("a", "add", "Add"),
         ("e", "edit", "Edit"),
         ("d", "delete", "Delete"),
+        ("r", "recheck", "Recheck"),
         ("escape", "app.pop_screen", "Back"),
     ]
 
     def compose(self) -> ComposeResult:
         yield Static("pretool | Sites", id="topbar")
         yield DataTable(cursor_type="row", id="table")
-        yield Static("a:Add  e:Edit  d:Delete  esc:Back", id="bottombar")
+        yield Static("a:Add  e:Edit  d:Delete  r:Recheck  esc:Back", id="bottombar")
         yield Static(" ", id="marquee")
 
     def on_mount(self) -> None:
         t = self.query_one("#table", DataTable)
-        t.add_columns("Site", "Affils", "Active")
+        self._cols = t.add_columns("Site", "Affils", "Active", "Status", "Response time")
+        self._rows: dict[str, object] = {}
         self.refresh_table()
+        self.run_checks()
 
     def refresh_table(self) -> None:
         t = self.query_one("#table", DataTable)
         t.clear()
+        self._rows = {}
         for s in self.app.cfg["sites"]:
             affil_names = ", ".join(a["name"] for a in s.get("affils", []))
-            t.add_row(s["name"], affil_names or "-", "yes" if s.get("enabled", True) else "no")
+            active = "yes" if s.get("enabled", True) else "no"
+            if s.get("enabled", True):
+                key = t.add_row(s["name"], affil_names or "-", active, "checking...", "-")
+                self._rows[s["name"]] = key
+            else:
+                t.add_row(s["name"], affil_names or "-", active, "-", "-")
+
+    def action_recheck(self) -> None:
+        self.refresh_table()
+        self.run_checks()
+
+    @work(thread=True, exclusive=True)
+    def run_checks(self) -> None:
+        api = self.app.make_api()
+        for s in enabled_sites(self.app.cfg):
+            name = s["name"]
+            t0 = time.monotonic()
+            try:
+                res = api.raw("noop", [name])
+                ms = (time.monotonic() - t0) * 1000
+                text = next(iter(res.values()), "").lower()
+                if "fail" in text or "error" in text or "unable" in text:
+                    status, rtime = "[red]ERROR[/red]", f"{ms:.0f} ms"
+                else:
+                    status, rtime = "[green]ONLINE[/green]", f"{ms:.0f} ms"
+            except Exception as e:
+                status, rtime = f"[red]OFFLINE ({type(e).__name__})[/red]", "-"
+            self.app.call_from_thread(self._update_row, name, status, rtime)
+
+    def _update_row(self, name: str, status: str, rtime: str) -> None:
+        t = self.query_one("#table", DataTable)
+        key = self._rows.get(name)
+        if key is not None:
+            t.update_cell(key, self._cols[3], status)
+            t.update_cell(key, self._cols[4], rtime)
 
     def _idx(self) -> int | None:
         t = self.query_one("#table", DataTable)
@@ -701,58 +739,6 @@ class SectionsScreen(Screen):
                 save_config(self.app.cfg)
                 self.refresh_table()
         self.app.push_screen(ConfirmModal(f"Delete {name}?"), done)
-
-
-class OnlineScreen(Screen):
-    BINDINGS = [
-        ("r", "recheck", "Recheck"),
-        ("escape", "app.pop_screen", "Back"),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Static("pretool | Online Check", id="topbar")
-        yield DataTable(cursor_type="row", id="table")
-        yield Static("r:Refresh  esc:Back", id="bottombar")
-        yield Static(" ", id="marquee")
-
-    def on_mount(self) -> None:
-        t = self.query_one("#table", DataTable)
-        self._cols = t.add_columns("Site", "Status", "Response time")
-        self.action_recheck()
-
-    def action_recheck(self) -> None:
-        t = self.query_one("#table", DataTable)
-        t.clear()
-        self._rows = {}
-        for s in enabled_sites(self.app.cfg):
-            key = t.add_row(s["name"], "checking...", "-")
-            self._rows[s["name"]] = key
-        self.run_checks()
-
-    @work(thread=True, exclusive=True)
-    def run_checks(self) -> None:
-        api = self.app.make_api()
-        for s in enabled_sites(self.app.cfg):
-            name = s["name"]
-            t0 = time.monotonic()
-            try:
-                res = api.raw("noop", [name])
-                ms = (time.monotonic() - t0) * 1000
-                text = next(iter(res.values()), "").lower()
-                if "fail" in text or "error" in text or "unable" in text:
-                    status, rtime = "[red]ERROR[/red]", f"{ms:.0f} ms"
-                else:
-                    status, rtime = "[green]ONLINE[/green]", f"{ms:.0f} ms"
-            except Exception as e:
-                status, rtime = f"[red]OFFLINE ({type(e).__name__})[/red]", "-"
-            self.app.call_from_thread(self._update, name, status, rtime)
-
-    def _update(self, name: str, status: str, rtime: str) -> None:
-        t = self.query_one("#table", DataTable)
-        key = self._rows.get(name)
-        if key is not None:
-            t.update_cell(key, self._cols[1], status)
-            t.update_cell(key, self._cols[2], rtime)
 
 
 class PreScreen(Screen):
@@ -1029,6 +1015,7 @@ class PretoolApp(App):
         self.cfg = load_config()
         self.log_lines: list[str] = []
         self._site_status: dict[str, bool | None] = {}
+        self._site_rtime: dict[str, str] = {}
 
     def make_api(self) -> CbApi:
         return CbApi(self.cfg, logger=self.add_log)
@@ -1040,7 +1027,6 @@ class PretoolApp(App):
 
     MENU_ITEMS = [
         ("Pre release", "pre"),
-        ("Online check", "online"),
         ("Sites", "sites"),
         ("Sections", "sections"),
         ("Settings (API)", "settings"),
@@ -1069,19 +1055,27 @@ class PretoolApp(App):
             self._site_status[s["name"]] = None
         self._update_status_bar()
         self._check_sites()
+        self.set_interval(60, self._check_sites)
 
     @work(thread=True, exclusive=True)
     def _check_sites(self) -> None:
         api = self.make_api()
         for s in enabled_sites(self.cfg):
             name = s["name"]
+            t0 = time.monotonic()
             try:
                 res = api.raw("noop", [name])
+                ms = (time.monotonic() - t0) * 1000
                 text = next(iter(res.values()), "").lower()
                 online = "fail" not in text and "error" not in text and "unable" not in text
             except Exception:
                 online = False
+                ms = 0
             self._site_status[name] = online
+            if online:
+                self._site_rtime[name] = f"{ms:.0f}ms"
+            else:
+                self._site_rtime.pop(name, None)
             self.call_from_thread(self._update_status_bar)
 
     def _update_status_bar(self) -> None:
@@ -1090,7 +1084,11 @@ class PretoolApp(App):
             if status is None:
                 parts.append(f"[yellow]{name}[/yellow]")
             elif status:
-                parts.append(f"[green]{name}[/green]")
+                rtime = self._site_rtime.get(name, "")
+                if rtime:
+                    parts.append(f"[green]{name} ({rtime})[/green]")
+                else:
+                    parts.append(f"[green]{name}[/green]")
             else:
                 parts.append(f"[red]{name}[/red]")
         text = "  ".join(parts) if parts else " "
@@ -1108,7 +1106,6 @@ class PretoolApp(App):
         key = self.MENU_ITEMS[row][1]
         screens = {
             "pre": PreScreen,
-            "online": OnlineScreen,
             "sites": SitesScreen,
             "sections": SectionsScreen,
             "settings": SettingsScreen,
