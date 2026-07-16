@@ -945,6 +945,7 @@ class SettingsScreen(Screen):
             self.app.cfg["api"].update(data)
             save_config(self.app.cfg)
             self.app.notify("Saved")
+            self.app.pop_screen()
         elif event.button.id == "btn_test":
             data = self._collect()
             if data is None:
@@ -1021,8 +1022,10 @@ class PretoolApp(App):
     *:focus { border: solid white; }
     Input { border: solid grey; background: black; color: white; }
     Input:focus { border: solid white; background: black; color: white; }
+    Input > .input--cursor { background: white; color: black; }
     TextArea { border: solid grey; background: black; color: white; }
     TextArea:focus { border: solid white; background: black; color: white; }
+    TextArea .text-area--cursor { background: white; color: black; }
     Checkbox { border: none; background: black; color: grey; }
     Checkbox:focus { border: none; color: white; text-style: bold; }
     Vertical { background: black; }
