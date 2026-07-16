@@ -1008,12 +1008,22 @@ class PretoolApp(App):
     #sitelist { max-height: 15; }
     .siterow { height: auto; }
     .sitestatus { padding-left: 2; }
-    DataTable { height: 1fr; }
+    DataTable { height: 1fr; border: none; }
+    DataTable > .datatable--cursor { background: white; color: black; }
+    DataTable:focus > .datatable--cursor { background: white; color: black; }
+    DataTable > .datatable--header { background: black; color: white; text-style: bold; }
     #status { padding: 0 1; height: auto; }
     #settingsbox { padding: 0 1; }
     #settingsbox Input { margin-bottom: 1; }
     #settingsbox Checkbox { margin-bottom: 1; }
     #settings_status { height: auto; }
+    *:focus { border: solid white; }
+    Input { border: solid white; }
+    Input:focus { border: solid white; }
+    TextArea { border: solid white; }
+    TextArea:focus { border: solid white; }
+    Checkbox { border: none; }
+    Checkbox:focus { border: none; }
     """
 
     BINDINGS = [("q", "request_quit", "Quit")]
